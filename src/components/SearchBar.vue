@@ -9,7 +9,7 @@ const emit = defineEmits(['submit'])
 
 <template>
     <form
-        class="flex w-full max-w-xl overflow-hidden rounded-full border border-olive/30 bg-white focus-within:border-gold"
+        class="flex w-full max-w-xl overflow-hidden rounded-full border border-stone/30 bg-paper text-ink focus-within:border-primary-deep focus-within:ring-2 focus-within:ring-primary-deep/20"
         @submit.prevent="emit('submit')"
     >
         <label class="sr-only" :for="searchId">Search keyword</label>
@@ -17,11 +17,11 @@ const emit = defineEmits(['submit'])
             :id="searchId"
             v-model="model"
             :placeholder="placeholder"
-            class="flex-1 bg-transparent px-6 py-3 outline-none placeholder:text-olive/60"
+            class="min-w-0 flex-1 bg-transparent px-6 py-3 outline-none placeholder:text-stone"
         />
         <button
             type="submit"
-            class="m-1 rounded-full bg-forest px-6 font-bold text-cream transition hover:bg-olive"
+            class="m-1 rounded-full bg-midnight px-6 font-semibold text-cream transition-colors duration-200 hover:bg-primary hover:text-midnight"
         >
             Find
         </button>

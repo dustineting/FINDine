@@ -20,23 +20,25 @@ onUnmounted(() => window.removeEventListener('scroll', onScroll))
 <template>
     <header
         class="fixed inset-x-0 top-0 z-50 transition-colors duration-300"
-        :class="scrolled || open ? 'bg-forest/95 backdrop-blur shadow-lg shadow-black/10' : 'bg-transparent'"
+        :class="
+            scrolled || open ? 'bg-midnight/95 backdrop-blur shadow-lg shadow-black/10' : 'bg-transparent'
+        "
     >
         <nav class="mx-auto flex h-18 max-w-6xl items-center justify-between px-6">
-            <a href="#home" class="font-display text-2xl text-cream">
-                FIND<span class="italic text-gold">ine</span>
+            <a href="#home" class="font-display text-3xl font-semibold tracking-tight text-cream">
+                FIND<span class="italic text-primary">ine</span>
             </a>
             <ul class="hidden gap-8 md:flex">
                 <li v-for="l in links" :key="l.href">
                     <a
                         :href="l.href"
-                        class="text-sm tracking-wide text-cream/80 transition hover:text-gold"
+                        class="text-sm tracking-wide text-cream/85 transition-colors duration-200 hover:text-primary"
                         >{{ l.label }}</a
                     >
                 </li>
             </ul>
             <button
-                class="text-cream md:hidden"
+                class="text-cream transition-colors duration-200 hover:text-primary md:hidden"
                 type="button"
                 aria-label="Toggle menu"
                 :aria-expanded="open"
@@ -51,7 +53,12 @@ onUnmounted(() => window.removeEventListener('scroll', onScroll))
         </nav>
         <ul v-show="open" id="mobile-navigation" class="space-y-1 px-6 pb-5 md:hidden">
             <li v-for="l in links" :key="l.href">
-                <a :href="l.href" class="block py-2 text-cream/90" @click="open = false">{{ l.label }}</a>
+                <a
+                    :href="l.href"
+                    class="block py-2 text-cream/90 transition-colors duration-200 hover:text-primary"
+                    @click="open = false"
+                    >{{ l.label }}</a
+                >
             </li>
         </ul>
     </header>
