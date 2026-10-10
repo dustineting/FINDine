@@ -17,23 +17,23 @@ Open http://localhost:8443. One development command serves Vue and Express.
 ## Project Structure
 
     src/
-      App.vue                 Page layout
-      components/             Vue interface
-      composables/useRequest.js  Shared request state and stale-response handling
-      services/api.js         Calls the Express API
-      index.css               Fonts and Tailwind theme
-      main.js                 Vue entrypoint
+      App.vue                       Page layout
+      components/                   Vue interface
+      composables/useRequest.js     Shared request state and stale-response handling
+      services/api.js               Calls the Express API
+      index.css                     Fonts and Tailwind theme
+      main.js                       Vue entrypoint
     server/
-      index.js                Starts the standalone Express server
-      app.js                  Middleware and route registration
-      routes/                 API endpoint definitions
-      controllers/            Request handling and restaurant queries
-      models/                 Mongoose schemas
-      config/db.js            MongoDB connection
-      services/jsonStore.js   Temporary server-side fallback
-      data/restaurants.json   Existing restaurant dataset
-    tests/                    Request and error-handling checks
-    vite.config.ts            Vue build configuration and local API integration
+      index.js                      Starts the standalone Express server
+      app.js                        Middleware and route registration
+      routes/                       API endpoint definitions
+      controllers/                  Request handling and restaurant queries
+      models/                       Mongoose schemas
+      config/db.js                  MongoDB connection
+      services/jsonStore.js         Temporary server-side fallback
+      data/restaurants.json         Existing restaurant dataset
+    tests/                          Request and error-handling checks
+    vite.config.ts                  Vue build configuration and local API integration
 
 AGENTS.md provides project instructions for Codex.
 Application code uses JavaScript; Vite configuration uses TypeScript.
