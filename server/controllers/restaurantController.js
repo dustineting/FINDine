@@ -25,9 +25,7 @@ const PROJECTION = { _id: 0, restaurant_id: 1, name: 1, borough: 1, cuisine: 1, 
 // GET /api/restaurants?search=&borough=&page=&limit=
 // Search matches name OR cuisine; borough filters (groups) the results.
 export async function listRestaurants(req, res, next) {
-    const { search = '', borough = '' } = req.query
-    const limit = Math.min(parseInt(req.query.limit) || 25, 100)
-    const page = Math.max(parseInt(req.query.page) || 1, 1)
+    const { search, borough, limit, page } = req.validatedQuery
     try {
         const filter = {}
         if (res.locals.source === 'json') return res.json(listFromJson({ search, borough, page, limit }))
@@ -56,8 +54,7 @@ export async function listRestaurants(req, res, next) {
 // GET /api/restaurants/best?search=&limit=
 // Restaurants whose aggregated (summed) grade scores exceed 90.
 export async function bestRestaurants(req, res, next) {
-    const { search = '' } = req.query
-    const limit = Math.min(parseInt(req.query.limit) || 50, 200)
+    const { search, limit } = req.validatedQuery
     try {
         if (res.locals.source === 'json') return res.json(bestFromJson({ search, limit }))
 
