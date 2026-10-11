@@ -8,6 +8,7 @@ import path from 'node:path'
 // Endpoint tests deliberately use the bundled fallback, never a developer's live database.
 process.env.MONGODB_URI = ''
 const { createApp } = await import('../server/app.js')
+const { default: vercelApp } = await import('../api/index.js')
 
 async function listen(t, app) {
     const server = app.listen(0, '127.0.0.1')
@@ -118,4 +119,29 @@ test('standalone frontend serving keeps API and static files separate', async (t
     const missing = await fetch(`${origin}/api/missing`)
     assert.equal(missing.status, 404)
     assert.deepEqual(await missing.json(), { error: 'API endpoint not found' })
+})
+
+test('Vercel entry point serves nested API routes and preserves query validation', async (t) => {
+    const origin = await listen(t, vercelApp)
+    const health = await fetch(`${origin}/api/health`)
+    assert.equal(health.status, 200)
+    assert.deepEqual(await health.json(), { ok: true, source: 'json' })
+
+    const list = await fetch(`${origin}/api/restaurants?borough=Queens&limit=2&page=2`)
+    assert.equal(list.status, 200)
+    const data = await list.json()
+    assert.equal(data.items.length, 2)
+    assert.equal(data.page, 2)
+    assert.ok(data.items.every((item) => item.borough === 'Queens'))
+
+    for (const route of ['best?limit=2', 'boroughs', 'stats']) {
+        const response = await fetch(`${origin}/api/restaurants/${route}`)
+        assert.equal(response.status, 200)
+        assert.equal(response.headers.get('X-Data-Source'), 'json')
+        await response.json()
+    }
+    assert.equal((await fetch(`${origin}/api/restaurants?limit=-1`)).status, 400)
+    assert.equal((await fetch(`${origin}/api/restaurants?search=a&search=b`)).status, 400)
+    assert.equal((await fetch(`${origin}/api/unknown`)).status, 404)
+    assert.equal((await fetch(origin)).status, 404)
 })
