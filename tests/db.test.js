@@ -1,13 +1,18 @@
 ﻿import assert from 'node:assert/strict'
 import test from 'node:test'
 import mongoose from 'mongoose'
+import dns from 'node:dns'
 import { connectDB, markDBFailed } from '../server/config/db.js'
 
 test('database connections are shared, recover after failure, and respect cooldowns', async (t) => {
     const originalUri = process.env.MONGODB_URI
+    const originalDnsServers = process.env.MONGODB_DNS_SERVERS
+    delete process.env.MONGODB_DNS_SERVERS
     t.after(() => {
         if (originalUri === undefined) delete process.env.MONGODB_URI
         else process.env.MONGODB_URI = originalUri
+        if (originalDnsServers === undefined) delete process.env.MONGODB_DNS_SERVERS
+        else process.env.MONGODB_DNS_SERVERS = originalDnsServers
     })
 
     let now = 100_000
@@ -21,6 +26,7 @@ test('database connections are shared, recover after failure, and respect cooldo
     t.mock.method(Date, 'now', () => now)
     t.mock.method(console, 'log', () => {})
     t.mock.method(console, 'warn', () => {})
+    const setServers = t.mock.method(dns, 'setServers', () => {})
     const connect = t.mock.method(mongoose, 'connect', (uri, options) => {
         assert.equal(uri, 'mongodb://localhost/findine')
         assert.equal(options.serverSelectionTimeoutMS, 5000)
@@ -35,6 +41,7 @@ test('database connections are shared, recover after failure, and respect cooldo
     const first = connectDB()
     const simultaneous = connectDB()
     assert.equal(connect.mock.callCount(), 1)
+    assert.equal(setServers.mock.callCount(), 0)
     mongoose.connection.readyState = 1
     attempts[0].resolve(mongoose)
     assert.equal(await first, mongoose.connection)
@@ -50,7 +57,9 @@ test('database connections are shared, recover after failure, and respect cooldo
 
     // A dropped connection must not reuse the previous, already-resolved promise.
     mongoose.connection.readyState = 0
+    process.env.MONGODB_DNS_SERVERS = ' 1.1.1.1, ,8.8.8.8 '
     const dropped = connectDB()
+    assert.deepEqual(setServers.mock.calls[0].arguments, [['1.1.1.1', '8.8.8.8']])
     assert.equal(connect.mock.callCount(), 2)
     attempts[1].reject(new Error('Connection refused'))
     await assert.rejects(dropped, /Connection refused/)

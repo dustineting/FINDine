@@ -1,5 +1,7 @@
 ﻿import mongoose from 'mongoose'
 
+import dns from 'node:dns'
+
 // Let Express use its JSON fallback instead of queuing queries while disconnected.
 mongoose.set('bufferCommands', false)
 
@@ -39,6 +41,11 @@ export async function connectDB() {
 
 async function openConnection(uri) {
     try {
+        const dnsServers = process.env.MONGODB_DNS_SERVERS?.split(',')
+            .map((server) => server.trim())
+            .filter(Boolean)
+        if (dnsServers?.length) dns.setServers(dnsServers)
+
         // Mongoose owns the timeout; no competing timer or background disconnect is needed.
         await mongoose.connect(uri, {
             serverSelectionTimeoutMS: CONNECT_TIMEOUT_MS,
