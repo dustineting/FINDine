@@ -41,6 +41,7 @@ Open http://localhost:8443. One development command serves Vue and Express.
       routes/                       API endpoint definitions
       controllers/                  Request handling and restaurant queries
       models/                       Mongoose schemas
+      middleware/                   API query validation
       config/db.js                  MongoDB connection
       services/jsonStore.js         Server-side JSON fallback
       data/restaurants.json         Existing restaurant dataset
@@ -79,7 +80,8 @@ server request finishes within 20 seconds.
 | npm run dev          | Vue and Express together on port 8443                    |
 | npm run build        | Build frontend assets into dist/                         |
 | npm run preview      | Check the built frontend and API locally on port 8443    |
-| npm run server       | Run the API alone on port 5000                           |
+| npm run server       | Serve the built frontend and API together on port 5000   |
+| npm start            | Serve the built frontend and API together on port 5000   |
 | npm test             | Test database connections, API client, and request state |
 | npm run check:config | Type-check Vite configuration, not Vue components        |
 | npm run format       | Format source and documentation                          |
@@ -92,6 +94,11 @@ PORT overrides the port. Set HOST in the shell to override Vite's default
 
 All endpoints are read-only.
 
+Search accepts one string of up to 200 characters; borough accepts one string of
+up to 100 characters. Limits and directory page numbers must be positive safe
+integers. Limits are capped at 100 for the directory and 200 for Best Quality.
+Malformed or repeated values for these supported parameters return HTTP 400.
+
 - GET /api/health
 - GET /api/restaurants?search=&borough=&page=&limit=
 - GET /api/restaurants/best?search=&limit=
@@ -103,9 +110,19 @@ descending. This is the existing query rule, not a validated quality rating.
 
 ## Production
 
-Vite preview is for local verification. The frontend build alone does not
-deploy Express. Hosting must serve dist/ and forward /api to the standalone
-Express server, with MONGODB_URI configured on the backend.
+Build the frontend and start the standalone Express server:
 
-Site metadata is in index.html. The existing search-indexing restriction is
-preserved in its robots meta tag and public/robots.txt.
+    npm ci
+    npm run build
+    npm start
+
+Express serves `dist/` and `/api` from the same origin. `npm run server` starts
+the same server. The default port is 5000; hosting can set `PORT`. Configure
+`MONGODB_URI` and, if necessary, `MONGODB_DNS_SERVERS` in the hosting environment.
+Keep `dist/` in the deployed build output; it remains ignored by Git.
+
+Vite dev and preview are for development and local verification. If frontend and
+backend hosting are separate, forward `/api` requests to the Express server.
+
+Site metadata is in index.html. Its robots meta tag and public/robots.txt allow
+search indexing.
