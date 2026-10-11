@@ -25,7 +25,7 @@ onMounted(load)
                         Top-Scoring Restaurants
                     </h2>
                 </div>
-                <p class="text-cream/85">
+                <p class="text-cream/85 md:text-right">
                     Restaurants whose
                     <span class="text-primary">aggregated inspection scores exceed 90</span>, ranked highest
                     first.
