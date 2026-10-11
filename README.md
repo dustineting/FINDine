@@ -46,6 +46,8 @@ Open http://localhost:8443. One development command serves Vue and Express.
       services/jsonStore.js         Server-side JSON fallback
       data/restaurants.json         Existing restaurant dataset
     tests/                          Database connection, request, and error-handling checks
+    api/index.js                    Vercel Function entry point for the Express API
+    vercel.json                     Vercel build, API routing, and function configuration
     vite.config.ts                  Vue build configuration and local API integration
 
 AGENTS.md provides project instructions for Codex.
@@ -126,3 +128,34 @@ backend hosting are separate, forward `/api` requests to the Express server.
 
 Site metadata is in index.html. Its robots meta tag and public/robots.txt allow
 search indexing.
+
+## Vercel
+
+Import the GitHub repository as a Vercel project with the repository root (`.`)
+as its Root Directory. Use the Vite framework preset and Node.js 24.x. The checked-in
+`vercel.json` sets the install command to `npm ci`, the build command to
+`npm run build`, and the output directory to `dist`. No start command is needed
+on Vercel; `npm start` remains available for standalone hosting.
+
+Vercel serves the frontend as static assets and forwards `/api/*` requests to
+`api/index.js`, which exports the existing Express app. The function includes
+`server/data/restaurants.json` to preserve the server-side fallback. The API uses
+the existing shared MongoDB connection within each function instance.
+
+In Vercel Project Settings, configure environment variables for Production and
+Preview deployments:
+
+- `MONGODB_URI`: your Atlas URI pointing to `restaurants_db`.
+- `MONGODB_DNS_SERVERS`: optional; use only if Atlas DNS lookups fail.
+
+These variables belong to the backend and must not use a `VITE_` prefix. The local
+`.env` file is not uploaded. In Atlas Network Access, allow connections from the
+deployment environment; access granted to your local computer does not cover Vercel.
+Redeploy after changing environment variables.
+
+After deploying, open `/api/health` on the deployment URL and confirm that it reports
+`"source": "mongodb"`. Test the Directory filters and Best Quality search. A healthy
+page alone does not confirm MongoDB because the JSON fallback remains available.
+
+See [Vercel Node.js Functions](https://vercel.com/docs/functions/runtimes/node-js)
+and [Vercel project configuration](https://vercel.com/docs/project-configuration/vercel-json).
