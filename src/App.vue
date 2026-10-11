@@ -1,4 +1,5 @@
 <script setup>
+import vReveal from './directives/reveal.js'
 import NavBar from './components/NavBar.vue'
 import HeroSection from './components/HeroSection.vue'
 import AboutSection from './components/AboutSection.vue'
@@ -11,9 +12,9 @@ import SiteFooter from './components/SiteFooter.vue'
     <NavBar />
     <main>
         <HeroSection />
-        <AboutSection />
-        <RestaurantList />
-        <BestRestaurants />
+        <AboutSection v-reveal />
+        <RestaurantList v-reveal />
+        <BestRestaurants v-reveal />
     </main>
-    <SiteFooter />
+    <SiteFooter v-reveal />
 </template>

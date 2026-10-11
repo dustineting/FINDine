@@ -19,7 +19,7 @@ onUnmounted(() => window.removeEventListener('scroll', onScroll))
 
 <template>
     <header
-        class="fixed inset-x-0 top-0 z-50 transition-colors duration-300"
+        class="page-enter fixed inset-x-0 top-0 z-50 transition-colors duration-300"
         :class="
             scrolled || open ? 'bg-midnight/95 backdrop-blur shadow-lg shadow-black/10' : 'bg-transparent'
         "
@@ -32,7 +32,7 @@ onUnmounted(() => window.removeEventListener('scroll', onScroll))
                 <li v-for="l in links" :key="l.href">
                     <a
                         :href="l.href"
-                        class="text-sm tracking-wide text-cream/85 transition-colors duration-200 hover:text-primary"
+                        class="nav-link text-sm tracking-wide text-cream/85 transition-colors duration-200 hover:text-primary"
                         >{{ l.label }}</a
                     >
                 </li>
@@ -55,7 +55,7 @@ onUnmounted(() => window.removeEventListener('scroll', onScroll))
             <li v-for="l in links" :key="l.href">
                 <a
                     :href="l.href"
-                    class="block py-2 text-cream/90 transition-colors duration-200 hover:text-primary"
+                    class="nav-link inline-block py-2 text-cream/90 transition-colors duration-200 hover:text-primary"
                     @click="open = false"
                     >{{ l.label }}</a
                 >

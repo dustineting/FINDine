@@ -1,4 +1,5 @@
 <script setup>
+import AnimatedNumber from './AnimatedNumber.vue'
 import { computed, onMounted } from 'vue'
 import useRequest from '../composables/useRequest.js'
 import { fetchStats } from '../services/api.js'
@@ -39,7 +40,7 @@ const stats = computed(() => [
             >
                 <div v-for="s in stats" :key="s.label">
                     <dt class="font-display text-4xl font-semibold text-primary-deep">
-                        <span v-if="s.value != null">{{ s.value.toLocaleString() }}</span>
+                        <AnimatedNumber v-if="s.value != null" :value="s.value" />
                         <span
                             v-else
                             class="inline-block h-8 w-16 animate-pulse rounded bg-primary/20"
@@ -50,9 +51,9 @@ const stats = computed(() => [
                 </div>
             </dl>
         </div>
-        <div class="relative">
+        <div class="about-portrait relative overflow-hidden rounded-t-full">
             <img
-                src="https://images.unsplash.com/photo-1622021142947-da7dedc7c39a?auto=format&fit=crop&w=1200&q=80"
+                src="/images/about-chef.avif"
                 alt="Chef chopping vegetables"
                 class="aspect-[4/5] w-full rounded-t-full object-cover"
             />

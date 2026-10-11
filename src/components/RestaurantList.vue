@@ -8,6 +8,7 @@ import RestaurantTable from './RestaurantTable.vue'
 const search = ref('')
 const borough = ref('')
 const page = ref(1)
+const resultVersion = ref(0)
 const { data, loading, error, load } = useRequest(
     () => fetchRestaurants({ search: search.value, borough: borough.value, page: page.value, limit: 15 }),
     { items: [], total: 0, pages: 0 },
@@ -18,6 +19,8 @@ const {
     loading: boroughLoading,
     load: loadBoroughs,
 } = useRequest(fetchBoroughs, [])
+
+watch(data, () => resultVersion.value++)
 
 function submit() {
     page.value === 1 ? load() : (page.value = 1)
@@ -55,6 +58,7 @@ onMounted(() => {
                                 : 'border-stone/30 text-stone hover:border-primary-deep hover:bg-primary/10 hover:text-midnight'
                         "
                         @click="borough = ''"
+                        :aria-pressed="!borough"
                     >
                         All Boroughs
                     </button>
@@ -68,18 +72,19 @@ onMounted(() => {
                                 : 'border-stone/30 text-stone hover:border-primary-deep hover:bg-primary/10 hover:text-midnight'
                         "
                         @click="pickBorough(b)"
+                        :aria-pressed="borough === b"
                     >
                         {{ b }}
                     </button>
                 </div>
                 <p v-if="boroughError" role="alert" class="text-sm text-midnight">
-                    {{ boroughError }} <button class="underline" @click="loadBoroughs">Retry boroughs</button>
+                    {{ boroughError }} <button class="underline" @click="loadBoroughs">Retry Boroughs</button>
                 </p>
                 <p v-else-if="boroughLoading" role="status" class="text-sm text-stone">Loading boroughs...</p>
             </div>
 
             <div
-                v-if="!error && !loading"
+                v-if="!error && resultVersion"
                 class="mb-4 mt-12 flex items-center justify-between text-sm text-stone"
             >
                 <span
@@ -87,18 +92,25 @@ onMounted(() => {
                     Found</span
                 >
             </div>
-            <p v-if="error" role="alert" class="mt-8 text-midnight">
-                {{ error }} <button class="underline" @click="load">Retry</button>
-            </p>
-            <p v-else-if="loading" role="status" class="mt-8 text-stone">Loading restaurants...</p>
-            <RestaurantTable v-else :items="data.items" />
+            <div class="relative" :aria-busy="loading">
+                <p role="status" class="sr-only">{{ loading ? 'Loading restaurants...' : '' }}</p>
+                <div
+                    class="results-transition grid transition-opacity duration-200"
+                    :class="{ 'opacity-50': loading && resultVersion }"
+                >
+                    <Transition name="results-transition">
+                        <p v-if="error" key="error" role="alert" class="mt-8 text-midnight">
+                            {{ error }} <button class="underline" @click="load">Retry</button>
+                        </p>
+                        <RestaurantTable v-else-if="resultVersion" :key="resultVersion" :items="data.items" />
+                        <p v-else key="loading" class="mt-8 min-h-80 text-stone">Loading restaurants...</p>
+                    </Transition>
+                </div>
+            </div>
 
-            <div
-                v-if="!error && !loading && data.pages > 1"
-                class="mt-8 flex items-center justify-center gap-4 text-sm"
-            >
+            <div v-if="!error && data.pages > 1" class="mt-8 flex items-center justify-center gap-4 text-sm">
                 <button
-                    :disabled="page <= 1"
+                    :disabled="loading || page <= 1"
                     class="rounded-full border border-stone/30 px-4 py-2 transition-colors duration-200 enabled:hover:border-primary-deep enabled:hover:bg-primary/10 enabled:hover:text-midnight disabled:opacity-30"
                     @click="page--"
                 >
@@ -106,7 +118,7 @@ onMounted(() => {
                 </button>
                 <span class="text-stone">Page {{ page }} of {{ data.pages }}</span>
                 <button
-                    :disabled="page >= data.pages"
+                    :disabled="loading || page >= data.pages"
                     class="rounded-full border border-stone/30 px-4 py-2 transition-colors duration-200 enabled:hover:border-primary-deep enabled:hover:bg-primary/10 enabled:hover:text-midnight disabled:opacity-30"
                     @click="page++"
                 >

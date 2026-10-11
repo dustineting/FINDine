@@ -1,15 +1,17 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, watch, onMounted } from 'vue'
 import useRequest from '../composables/useRequest.js'
 import { fetchBestRestaurants } from '../services/api.js'
 import SearchBar from './SearchBar.vue'
 import RestaurantTable from './RestaurantTable.vue'
 
 const search = ref('')
+const resultVersion = ref(0)
 const { data, loading, error, load } = useRequest(
     () => fetchBestRestaurants({ search: search.value, limit: 50 }),
     { items: [], total: 0 },
 )
+watch(data, () => resultVersion.value++)
 onMounted(load)
 </script>
 
@@ -30,16 +32,32 @@ onMounted(load)
                 </p>
             </div>
             <div class="mt-10">
-                <SearchBar v-model="search" placeholder="Search by name" @submit="load" />
+                <SearchBar v-model="search" placeholder="Search by Restaurant Name" @submit="load" />
             </div>
-            <p v-if="!error && !loading" class="mb-4 mt-10 text-sm text-cream/85">
+            <p v-if="!error && resultVersion" class="mb-4 mt-10 text-sm text-cream/85">
                 {{ data.total }} Restaurants Qualify
             </p>
-            <p v-if="error" role="alert" class="mt-10">
-                {{ error }} <button class="underline" @click="load">Retry</button>
-            </p>
-            <p v-else-if="loading" role="status" class="mt-10">Loading restaurants...</p>
-            <RestaurantTable v-else :items="data.items" show-total dark />
+            <div class="relative" :aria-busy="loading">
+                <p role="status" class="sr-only">{{ loading ? 'Loading restaurants...' : '' }}</p>
+                <div
+                    class="results-transition grid transition-opacity duration-200"
+                    :class="{ 'opacity-50': loading && resultVersion }"
+                >
+                    <Transition name="results-transition">
+                        <p v-if="error" key="error" role="alert" class="mt-10">
+                            {{ error }} <button class="underline" @click="load">Retry</button>
+                        </p>
+                        <RestaurantTable
+                            v-else-if="resultVersion"
+                            :key="resultVersion"
+                            :items="data.items"
+                            show-total
+                            dark
+                        />
+                        <p v-else key="loading" class="mt-10 min-h-80">Loading restaurants...</p>
+                    </Transition>
+                </div>
+            </div>
         </div>
     </section>
 </template>

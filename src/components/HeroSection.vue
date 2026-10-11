@@ -1,12 +1,12 @@
 <template>
     <section id="home" class="relative flex min-h-[92vh] items-end overflow-hidden bg-midnight">
         <img
-            src="https://images.unsplash.com/photo-1536392706976-e486e2ba97af?auto=format&fit=crop&w=2000&q=80"
+            src="/images/hero-new-york.avif"
             alt="Candlelit dinner table set with flowers"
-            class="absolute inset-0 h-full w-full object-cover opacity-55"
+            class="hero-image absolute inset-0 h-full w-full object-cover opacity-55"
         />
         <div class="absolute inset-0 bg-gradient-to-t from-midnight via-midnight/60 to-transparent" />
-        <div class="relative mx-auto w-full max-w-6xl px-6 pb-24 pt-40">
+        <div class="hero-content relative mx-auto w-full max-w-6xl px-6 pb-24 pt-40">
             <p class="mb-5 text-xs font-bold uppercase tracking-[0.3em] text-primary">
                 New York City · Restaurant Finder
             </p>
@@ -17,7 +17,7 @@
                 Search thousands of restaurants across the five boroughs by name or cuisine, and see how each
                 one fares in health inspections.
             </p>
-            <div class="mt-10 flex flex-wrap gap-4">
+            <div class="hero-actions mt-10 flex flex-wrap gap-4">
                 <a
                     href="#restaurants"
                     class="rounded-full bg-primary px-7 py-3 font-semibold text-midnight transition-colors duration-200 hover:bg-primary-light"
