@@ -7,6 +7,7 @@
                 >FIND<span class="italic text-primary">ine</span></a
             >
             <p>Built with MongoDB · Express · Vue · Node</p>
+            <a href="#admin" class="nav-link hover:text-primary">Admin</a>
             <p>© {{ new Date().getFullYear() }} FINDine</p>
         </div>
     </footer>

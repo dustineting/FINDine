@@ -46,6 +46,7 @@ Open http://localhost:8443. One development command serves Vue and Express.
       services/jsonStore.js         Server-side JSON fallback
       data/restaurants.json         Existing restaurant dataset
     tests/                          Database connection, request, and error-handling checks
+    scripts/setup-admin.js          Interactive local admin credential setup
     api/index.js                    Vercel Function entry point for the Express API
     vercel.json                     Vercel build, API routing, and function configuration
     vite.config.ts                  Vue build configuration and local API integration
@@ -84,6 +85,7 @@ server request finishes within 20 seconds.
 | npm run preview      | Check the built frontend and API locally on port 8443    |
 | npm run server       | Serve the built frontend and API together on port 5000   |
 | npm start            | Serve the built frontend and API together on port 5000   |
+| npm run admin:setup  | Generate local admin credentials and a session secret    |
 | npm test             | Test database connections, API client, and request state |
 | npm run check:config | Type-check Vite configuration, not Vue components        |
 | npm run format       | Format source and documentation                          |
@@ -94,7 +96,8 @@ PORT overrides the port. Set HOST in the shell to override Vite's default
 
 ## API
 
-All endpoints are read-only.
+Public endpoints are read-only. Restaurant writes require an authenticated admin
+session and a same-origin request.
 
 Search accepts one string of up to 200 characters; borough accepts one string of
 up to 100 characters. Limits and directory page numbers must be positive safe
@@ -106,9 +109,51 @@ Malformed or repeated values for these supported parameters return HTTP 400.
 - GET /api/restaurants/best?search=&limit=
 - GET /api/restaurants/boroughs
 - GET /api/restaurants/stats
+- POST /api/restaurants (admin)
+- PATCH /api/restaurants/:id (admin; MongoDB document `_id`)
+- DELETE /api/restaurants/:id (admin; MongoDB document `_id`)
 
 The existing "best" query selects summed inspection scores greater than 90,
 descending. This is the existing query rule, not a validated quality rating.
+
+## Restaurant Management
+
+Run this command in your own interactive terminal:
+
+    npm run admin:setup
+
+Enter your chosen admin username and password. Password input is hidden. The command
+preserves the existing MongoDB configuration and saves `ADMIN_USERNAME`,
+`ADMIN_PASSWORD_HASH`, and `ADMIN_SESSION_SECRET` in the Git-ignored `.env` file.
+Passwords must contain 12 to 256 characters. Only a salted scrypt password hash is
+stored; the original password is not saved. Restart the local server afterward.
+
+Open the site's Admin link in the footer or visit `/#admin`. Sign in to search,
+add, edit, and delete restaurants. The same form handles creation and editing,
+including optional inspection records. Deletion requires confirmation. Partial
+edits preserve untouched fields and coordinates. Returning to the public site
+reloads the directory, Best Quality results, and About totals.
+
+Admin reads and writes require MongoDB and never use or modify the JSON fallback.
+MongoDB generates each document's `_id`; if no restaurant identifier is provided
+for a new record, the server generates one. The management endpoints are:
+
+- GET /api/admin/session
+- POST /api/admin/login
+- POST /api/admin/logout
+- GET /api/admin/restaurants?search=&borough=&page=&limit=
+
+Sessions use signed, HttpOnly, SameSite cookies and expire after one hour. HTTPS
+deployments use Secure cookies. Sign out clears this browser's cookie. Rotating the
+session secret or changing the configured password hash invalidates all existing
+sessions. Login attempts are limited per server instance; on Vercel, limits are
+not shared between function instances. Vercel Firewall rate limiting can supplement
+this for larger public deployments.
+
+For Vercel Preview, add the three generated `ADMIN_` values under Project Settings
+Environment Variables and redeploy. Use Production too when ready to release CRUD
+on `main`. Do not use a `VITE_` prefix or commit these values. Preview and Production
+modify the same collection if they use the same `MONGODB_URI`.
 
 ## Production
 
