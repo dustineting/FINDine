@@ -10,6 +10,7 @@
         "format": "prettier --write .",
         "server": "node server/index.js",
         "start": "node server/index.js",
+        "admin:setup": "node scripts/setup-admin.js",
         "format:check": "prettier --check .",
         "check:config": "tsc --noEmit",
         "test": "node --test tests/*.test.js"

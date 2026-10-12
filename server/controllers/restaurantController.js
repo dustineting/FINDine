@@ -37,7 +37,7 @@ export async function listRestaurants(req, res, next) {
         if (borough) filter.borough = borough
 
         const [items, total] = await Promise.all([
-            Restaurant.find(filter, PROJECTION)
+            Restaurant.find(filter, res.locals.admin ? { ...PROJECTION, _id: 1 } : PROJECTION)
                 .sort({ name: 1 })
                 .skip((page - 1) * limit)
                 .limit(limit)
@@ -47,6 +47,10 @@ export async function listRestaurants(req, res, next) {
         ])
         res.json({ items, total, page, pages: Math.ceil(total / limit) })
     } catch (err) {
+        if (res.locals.admin)
+            return res
+                .status(503)
+                .json({ error: 'Unable to load restaurants from MongoDB. Please try again.' })
         fallback(res, next, err, () => listFromJson({ search, borough, page, limit }))
     }
 }
